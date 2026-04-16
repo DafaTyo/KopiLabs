@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>KopiLabs — Solusi Digital untuk Kedai Kopi Indonesia</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cream:   { DEFAULT: '#F7F0E6', 50: '#FDF9F4', 100: '#F7F0E6', 200: '#EDE0CB' },
+          espresso:{ DEFAULT: '#2C1810', 50:'#f5ede8', 100:'#d9b8a8', 200:'#b5866a', 400:'#7a4a2e', 600:'#4a2515', 800:'#2C1810', 900:'#1a0e09' },
+          caramel: { DEFAULT: '#C68B3F', 50:'#fdf3e3', 100:'#f6dba8', 200:'#e9b96a', 400:'#C68B3F', 600:'#9c6a28', 800:'#5c3c14' },
+          sage:    { DEFAULT: '#6B7C5E', 50:'#eef0eb', 100:'#cdd3c7', 200:'#a9b39f', 400:'#6B7C5E', 600:'#4c5c42', 800:'#2d3728' },
+          ivory:   '#FEFCF8',
+        },
+        fontFamily: {
+          display: ['Playfair Display', 'Georgia', 'serif'],
+          body:    ['DM Sans', 'sans-serif'],
+        },
+      }
+    }
+  }
+</script>
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'DM Sans', sans-serif; background: #FEFCF8; color: #2C1810; overflow-x: hidden; }
+
+  /* Noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 9999; opacity: 0.4;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: #F7F0E6; }
+  ::-webkit-scrollbar-thumb { background: #C68B3F; border-radius: 2px; }
+
+  /* Nav */
+  nav { position: fixed; top: 0; width: 100%; z-index: 100; backdrop-filter: blur(20px); background: rgba(254,252,248,0.88); border-bottom: 1px solid rgba(198,139,63,0.15); }
+
+  /* Hero */
+  .hero-bg {
+    background:
+      radial-gradient(ellipse 60% 50% at 80% 30%, rgba(198,139,63,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 60% at 10% 80%, rgba(107,124,94,0.10) 0%, transparent 60%),
+      #FEFCF8;
+  }
+
+  /* Floating coffee bean */
+  .bean {
+    display: inline-block;
+    width: 10px; height: 16px;
+    background: #C68B3F;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    position: relative;
+  }
+  .bean::after {
+    content: '';
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: 1px; height: 70%;
+    background: rgba(44,24,16,0.3);
+  }
+
+  /* Section divider */
+  .divider {
+    width: 60px; height: 2px;
+    background: linear-gradient(90deg, #C68B3F, #6B7C5E);
+    margin: 0 auto 2rem;
+  }
+
+  /* Card hover */
+  .service-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+  .service-card:hover { transform: translateY(-6px); box-shadow: 0 20px 60px rgba(44,24,16,0.12); }
+
+  /* Stat counter */
+  .stat-number { font-family: 'Playfair Display', serif; }
+
+  /* Team card */
+  .team-card { transition: transform 0.3s ease; }
+  .team-card:hover { transform: scale(1.02); }
+
+  /* Nav link */
+  .nav-link { position: relative; }
+  .nav-link::after {
+    content: ''; position: absolute; bottom: -2px; left: 0;
+    width: 0; height: 1.5px; background: #C68B3F;
+    transition: width 0.3s ease;
+  }
+  .nav-link:hover::after { width: 100%; }
+
+  /* CTA button */
+  .btn-primary {
+    background: #2C1810;
+    color: #F7F0E6;
+    border: 1.5px solid #2C1810;
+    transition: all 0.3s ease;
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: 0.05em;
+  }
+  .btn-primary:hover {
+    background: #C68B3F;
+    border-color: #C68B3F;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(198,139,63,0.3);
+  }
+
+  .btn-outline {
+    border: 1.5px solid #2C1810;
+    color: #2C1810;
+    transition: all 0.3s ease;
+  }
+  .btn-outline:hover {
+    background: #2C1810;
+    color: #F7F0E6;
+    transform: translateY(-2px);
+  }
+
+  /* Floating badge */
+  .badge-float {
+    animation: floatY 3s ease-in-out infinite;
+  }
+  @keyframes floatY {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-8px); }
+  }
+
+  /* Price tag */
+  .price-tag {
+    background: linear-gradient(135deg, #2C1810 0%, #4a2515 100%);
+    color: #F7F0E6;
+  }
+
+  /* Timeline */
+  .timeline-item { border-left: 2px solid #EDE0CB; }
+  .timeline-item::before {
+    content: '';
+    position: absolute; left: -6px; top: 6px;
+    width: 10px; height: 10px;
+    border-radius: 50%; background: #C68B3F;
+  }
+
+  /* Mission bar */
+  .mission-bar {
+    background:
+      linear-gradient(135deg, #2C1810 0%, #4a2515 60%, #2C1810 100%);
+  }
+
+  /* Marquee */
+  @keyframes marquee {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .marquee-track { animation: marquee 20s linear infinite; display: flex; width: max-content; }
+
+  /* Reveal classes */
+  .reveal { opacity: 0; transform: translateY(30px); }
+  .reveal-left { opacity: 0; transform: translateX(-40px); }
+  .reveal-right { opacity: 0; transform: translateX(40px); }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     NAV
+══════════════════════════════════════════ -->
+<nav class="py-4 px-6 lg:px-12">
+  <div class="max-w-7xl mx-auto flex items-center justify-between">
+    <a href="#" class="flex items-center gap-2">
+      <span class="font-display font-bold text-2xl text-espresso-800 tracking-tight">
+        Kopi<span class="text-caramel-400">Labs</span>
+      </span>
+    </a>
+
+    <div class="hidden md:flex items-center gap-8">
+      <a href="#layanan" class="nav-link text-sm font-medium text-espresso-600 hover:text-espresso-800 transition-colors">Layanan</a>
+      <a href="#tentang"  class="nav-link text-sm font-medium text-espresso-600 hover:text-espresso-800 transition-colors">Tentang</a>
+      <a href="#tim"      class="nav-link text-sm font-medium text-espresso-600 hover:text-espresso-800 transition-colors">Tim</a>
+      <a href="#harga"    class="nav-link text-sm font-medium text-espresso-600 hover:text-espresso-800 transition-colors">Harga</a>
+      <a href="#kontak"   class="nav-link text-sm font-medium text-espresso-600 hover:text-espresso-800 transition-colors">Kontak</a>
+    </div>
+
+    <a href="#kontak" class="btn-primary px-5 py-2.5 rounded-full text-sm font-medium cursor-pointer">
+      Mulai Sekarang →
+    </a>
+  </div>
+</nav>
+
+
+<!-- ══════════════════════════════════════════
+     HERO
+══════════════════════════════════════════ -->
+<section id="hero" class="hero-bg min-h-screen flex items-center pt-24 pb-16 px-6 lg:px-12 overflow-hidden">
+  <div class="max-w-7xl mx-auto w-full">
+    <div class="grid lg:grid-cols-2 gap-16 items-center">
+
+      <!-- Left copy -->
+      <div>
+        <div id="hero-badge" class="inline-flex items-center gap-2 bg-caramel-50 text-caramel-600 border border-caramel-200 rounded-full px-4 py-1.5 text-xs font-medium mb-8 opacity-0">
+          ☕ Solusi Digital untuk Kedai Kopi Indonesia
+        </div>
+
+        <h1 id="hero-title" class="font-display text-5xl lg:text-7xl font-black leading-[0.95] text-espresso-800 mb-6 opacity-0">
+          Naikin Level<br/>
+          <span class="text-caramel-400 italic">Kedai Kopi</span><br/>
+          Kamu
+        </h1>
+
+        <p id="hero-sub" class="text-espresso-400 text-lg leading-relaxed mb-10 max-w-md opacity-0">
+          Website profesional, menu digital QR, dan optimasi Google Maps — semua dalam satu paket terjangkau yang dirancang khusus untuk UMKM kedai kopi.
+        </p>
+
+        <div id="hero-cta" class="flex flex-wrap gap-4 opacity-0">
+          <a href="#layanan" class="btn-primary px-8 py-3.5 rounded-full font-medium text-sm">
+            Lihat Layanan Kami
+          </a>
+          <a href="#harga" class="btn-outline px-8 py-3.5 rounded-full font-medium text-sm">
+            Cek Harga
+          </a>
+        </div>
+
+        <!-- Mini stats -->
+        <div id="hero-stats" class="grid grid-cols-3 gap-6 mt-14 pt-10 border-t border-espresso-100 opacity-0">
+          <div>
+            <div class="stat-number text-3xl font-black text-espresso-800">30K+</div>
+            <div class="text-xs text-espresso-400 mt-1">Kedai kopi di Indonesia</div>
+          </div>
+          <div>
+            <div class="stat-number text-3xl font-black text-caramel-400">Rp300k</div>
+            <div class="text-xs text-espresso-400 mt-1">Harga mulai dari</div>
+          </div>
+          <div>
+            <div class="stat-number text-3xl font-black text-sage-400">900%</div>
+            <div class="text-xs text-espresso-400 mt-1">ROI proyeksi tahun 1</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right visual -->
+      <div id="hero-visual" class="relative opacity-0">
+        <!-- Main card mockup -->
+        <div class="relative mx-auto" style="max-width: 420px;">
+
+          <!-- Background blobs -->
+          <div class="absolute -inset-10 rounded-full opacity-20" style="background: radial-gradient(circle, #C68B3F 0%, transparent 70%); filter: blur(40px);"></div>
+
+          <!-- Main phone mockup -->
+          <div class="relative bg-espresso-800 rounded-[36px] p-3 shadow-2xl" style="box-shadow: 0 40px 80px rgba(44,24,16,0.3);">
+            <div class="bg-cream-50 rounded-[28px] overflow-hidden" style="min-height: 520px;">
+
+              <!-- Status bar -->
+              <div class="bg-espresso-800 px-6 pt-4 pb-6">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <div class="text-cream-100 text-xs opacity-60 mb-1">KopiLabs Client</div>
+                    <div class="text-cream-50 font-display font-bold text-xl">Warung Kopi<br/>Bahagia ☕</div>
+                  </div>
+                  <div class="w-12 h-12 rounded-xl bg-caramel-400 flex items-center justify-center text-white text-lg font-bold">WK</div>
+                </div>
+                <!-- Star rating -->
+                <div class="flex items-center gap-1 mt-4">
+                  <span class="text-caramel-200 text-sm">★★★★★</span>
+                  <span class="text-cream-100 text-xs opacity-60 ml-1">4.9 · 127 ulasan</span>
+                </div>
+              </div>
+
+              <!-- Content -->
+              <div class="p-5 space-y-4">
+                <!-- Menu items -->
+                <div class="text-espresso-600 text-xs font-semibold uppercase tracking-wider mb-3">Menu Unggulan</div>
+                <div class="space-y-3">
+                  <div class="flex items-center gap-3 bg-cream-100 rounded-xl p-3">
+                    <div class="w-10 h-10 rounded-lg bg-caramel-100 flex items-center justify-center text-lg">☕</div>
+                    <div class="flex-1">
+                      <div class="text-sm font-medium text-espresso-800">Es Kopi Susu</div>
+                      <div class="text-xs text-espresso-400">Rp 18.000</div>
+                    </div>
+                    <div class="w-6 h-6 rounded-full bg-caramel-400 flex items-center justify-center text-white text-xs">+</div>
+                  </div>
+                  <div class="flex items-center gap-3 bg-cream-100 rounded-xl p-3">
+                    <div class="w-10 h-10 rounded-lg bg-sage-100 flex items-center justify-center text-lg">🧋</div>
+                    <div class="flex-1">
+                      <div class="text-sm font-medium text-espresso-800">Brown Sugar Latte</div>
+                      <div class="text-xs text-espresso-400">Rp 22.000</div>
+                    </div>
+                    <div class="w-6 h-6 rounded-full bg-caramel-400 flex items-center justify-center text-white text-xs">+</div>
+                  </div>
+                  <div class="flex items-center gap-3 bg-cream-100 rounded-xl p-3">
+                    <div class="w-10 h-10 rounded-lg bg-espresso-100 flex items-center justify-center text-lg">🫗</div>
+                    <div class="flex-1">
+                      <div class="text-sm font-medium text-espresso-800">Americano</div>
+                      <div class="text-xs text-espresso-400">Rp 15.000</div>
+                    </div>
+                    <div class="w-6 h-6 rounded-full bg-caramel-400 flex items-center justify-center text-white text-xs">+</div>
+                  </div>
+                </div>
+
+                <!-- QR Badge -->
+                <div class="mt-4 p-3 border border-caramel-200 rounded-xl flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-lg bg-espresso-800 grid grid-cols-3 gap-0.5 p-1.5">
+                    <div class="bg-cream-50 rounded-sm"></div><div class="bg-cream-50 rounded-sm"></div><div class="bg-espresso-800 rounded-sm"></div>
+                    <div class="bg-cream-50 rounded-sm"></div><div class="bg-espresso-800 rounded-sm"></div><div class="bg-cream-50 rounded-sm"></div>
+                    <div class="bg-espresso-800 rounded-sm"></div><div class="bg-cream-50 rounded-sm"></div><div class="bg-cream-50 rounded-sm"></div>
+                  </div>
+                  <div>
+                    <div class="text-xs font-semibold text-espresso-800">Scan QR Menu</div>
+                    <div class="text-xs text-espresso-400">Powered by KopiLabs</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Floating badges -->
+          <div class="badge-float absolute -left-8 top-16 bg-white rounded-2xl px-4 py-2.5 shadow-lg border border-cream-200" style="animation-delay: 0s;">
+            <div class="flex items-center gap-2">
+              <span class="text-green-500 text-sm">●</span>
+              <span class="text-xs font-medium text-espresso-800">Google Maps Aktif</span>
+            </div>
+          </div>
+
+          <div class="badge-float absolute -right-6 top-1/3 bg-caramel-400 text-white rounded-2xl px-4 py-2.5 shadow-lg" style="animation-delay: 1s;">
+            <div class="text-xs font-medium">+40% Pengunjung</div>
+            <div class="text-xs opacity-70">dalam 3 bulan</div>
+          </div>
+
+          <div class="badge-float absolute -left-6 bottom-20 bg-espresso-800 text-cream-50 rounded-2xl px-4 py-2.5 shadow-lg" style="animation-delay: 2s;">
+            <div class="text-xs font-medium">WhatsApp Business</div>
+            <div class="text-xs opacity-70">Terintegrasi</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════
+     MARQUEE TICKER
+══════════════════════════════════════════ -->
+<div class="mission-bar py-4 overflow-hidden">
+  <div class="marquee-track">
+    <span class="inline-flex items-center gap-8 pr-8 text-cream-100 text-sm font-medium opacity-80">
+      <span>☕ Website Kedai Kopi</span><span class="text-caramel-200">✦</span>
+      <span>📱 Menu Digital QR</span><span class="text-caramel-200">✦</span>
+      <span>📍 Google Maps Optimization</span><span class="text-caramel-200">✦</span>
+      <span>💬 WhatsApp Business</span><span class="text-caramel-200">✦</span>
+      <span>🚀 Mulai dari Rp 300.000</span><span class="text-caramel-200">✦</span>
+      <span>✅ Garansi Revisi 14 Hari</span><span class="text-caramel-200">✦</span>
+      <span>☕ Website Kedai Kopi</span><span class="text-caramel-200">✦</span>
+      <span>📱 Menu Digital QR</span><span class="text-caramel-200">✦</span>
+      <span>📍 Google Maps Optimization</span><span class="text-caramel-200">✦</span>
+      <span>💬 WhatsApp Business</span><span class="text-caramel-200">✦</span>
+      <span>🚀 Mulai dari Rp 300.000</span><span class="text-caramel-200">✦</span>
+      <span>✅ Garansi Revisi 14 Hari</span><span class="text-caramel-200">✦</span>
+    </span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     MISSION
+══════════════════════════════════════════ -->
+<section id="tentang" class="py-28 px-6 lg:px-12">
+  <div class="max-w-7xl mx-auto">
+    <div class="grid lg:grid-cols-2 gap-20 items-center">
+
+      <!-- Left: story -->
+      <div class="reveal-left">
+        <p class="text-caramel-400 text-sm font-semibold tracking-widest uppercase mb-4">Tentang KopiLabs</p>
+        <h2 class="font-display text-4xl lg:text-5xl font-bold text-espresso-800 leading-tight mb-6">
+          Kami Percaya Setiap<br/>Kedai Kopi Berhak<br/><em class="text-caramel-400">Dikenal Dunia</em>
+        </h2>
+        <div class="divider" style="margin: 0 0 1.5rem;"></div>
+        <p class="text-espresso-400 leading-relaxed mb-6">
+          KopiLabs lahir dari satu observasi sederhana: banyak kedai kopi lokal dengan produk luar biasa, tapi tidak terjangkau secara digital. Pemiliknya punya passion, punya rasa — tapi belum punya kehadiran online yang kuat.
+        </p>
+        <p class="text-espresso-400 leading-relaxed mb-8">
+          Kami adalah tim mahasiswa lintas jurusan yang memadukan teknologi, desain, dan pemahaman mendalam tentang industri kopi — untuk menciptakan solusi yang nyata dan terjangkau bagi UMKM.
+        </p>
+
+        <!-- Mission quote -->
+        <div class="border-l-4 border-caramel-400 pl-6 py-2">
+          <p class="font-display text-lg italic text-espresso-800 leading-relaxed">
+            "Membantu kedai kopi Indonesia naik level melalui solusi digital yang praktis, terjangkau, dan berdampak nyata."
+          </p>
+        </div>
+      </div>
+
+      <!-- Right: facts grid -->
+      <div class="grid grid-cols-2 gap-4 reveal-right">
+        <div class="service-card bg-cream-100 rounded-2xl p-6">
+          <div class="font-display text-4xl font-black text-caramel-400 mb-2">2026</div>
+          <div class="text-sm text-espresso-600 font-medium">Tahun berdiri</div>
+          <div class="text-xs text-espresso-400 mt-1">Proyek kolaboratif mahasiswa</div>
+        </div>
+        <div class="service-card bg-espresso-800 rounded-2xl p-6">
+          <div class="font-display text-4xl font-black text-caramel-200 mb-2">4</div>
+          <div class="text-sm text-cream-100 font-medium">Founders</div>
+          <div class="text-xs text-cream-100 opacity-60 mt-1">Tim lintas jurusan</div>
+        </div>
+        <div class="service-card bg-caramel-400 rounded-2xl p-6">
+          <div class="font-display text-4xl font-black text-cream-50 mb-2">3</div>
+          <div class="text-sm text-cream-50 font-medium">Paket Layanan</div>
+          <div class="text-xs text-cream-50 opacity-70 mt-1">Website, QR, Maps+WA</div>
+        </div>
+        <div class="service-card bg-sage-400 rounded-2xl p-6">
+          <div class="font-display text-4xl font-black text-cream-50 mb-2">14</div>
+          <div class="text-sm text-cream-50 font-medium">Hari Garansi</div>
+          <div class="text-xs text-cream-50 opacity-70 mt-1">Revisi gratis</div>
+        </div>
+        <div class="service-card bg-cream-200 rounded-2xl p-6 col-span-2">
+          <div class="font-display text-4xl font-black text-espresso-800 mb-2">30,000+</div>
+          <div class="text-sm text-espresso-600 font-medium">Kedai kopi potensial di Indonesia</div>
+          <div class="text-xs text-espresso-400 mt-1">Peluang pasar yang menunggu</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════
+     SERVICES
+══════════════════════════════════════════ -->
+<section id="layanan" class="py-28 px-6 lg:px-12 bg-espresso-800">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-16 reveal">
+      <p class="text-caramel-200 text-sm font-semibold tracking-widest uppercase mb-4">Apa yang Kami Tawarkan</p>
+      <h2 class="font-display text-4xl lg:text-5xl font-bold text-cream-50 mb-4">Layanan Kami</h2>
+      <p class="text-cream-100 opacity-60 max-w-xl mx-auto">Tiga paket layanan yang saling melengkapi — dapat dibeli terpisah atau sebagai bundel untuk hasil maksimal.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6 mb-8">
+
+      <!-- Service 1 -->
+      <div class="service-card reveal bg-cream-50 rounded-3xl p-8">
+        <div class="w-14 h-14 rounded-2xl bg-caramel-50 flex items-center justify-center text-2xl mb-6">🌐</div>
+        <h3 class="font-display text-2xl font-bold text-espresso-800 mb-3">Website Kedai Kopi</h3>
+        <p class="text-espresso-400 text-sm leading-relaxed mb-6">
+          Website responsif profesional dengan halaman menu, lokasi, jam buka, dan kontak. Dibangun custom di WordPress — bukan template asal-asalan.
+        </p>
+        <ul class="space-y-2 text-sm text-espresso-600 mb-8">
+          <li class="flex items-center gap-2"><span class="text-caramel-400">✓</span> Desain custom sesuai karakter kedai</li>
+          <li class="flex items-center gap-2"><span class="text-caramel-400">✓</span> Halaman menu, lokasi, kontak</li>
+          <li class="flex items-center gap-2"><span class="text-caramel-400">✓</span> Mobile-friendly & cepat</li>
+          <li class="flex items-center gap-2"><span class="text-caramel-400">✓</span> Training CMS 1 jam</li>
+        </ul>
+        <div class="price-tag rounded-xl px-4 py-2 inline-block">
+          <span class="text-xs text-cream-100 opacity-60">Mulai dari</span>
+          <div class="font-display text-xl font-bold text-cream-50">Rp 1.200.000</div>
+        </div>
+      </div>
+
+      <!-- Service 2 -->
+      <div class="service-card reveal bg-caramel-400 rounded-3xl p-8" style="transition-delay: 0.1s;">
+        <div class="w-14 h-14 rounded-2xl bg-caramel-600 flex items-center justify-center text-2xl mb-6">📱</div>
+        <h3 class="font-display text-2xl font-bold text-cream-50 mb-3">Menu Digital QR</h3>
+        <p class="text-cream-50 opacity-80 text-sm leading-relaxed mb-6">
+          Scan QR, menu langsung muncul. Foto produk, deskripsi, harga — semua di genggaman pelanggan. Update kapan saja, tanpa biaya cetak ulang.
+        </p>
+        <ul class="space-y-2 text-sm text-cream-50 opacity-90 mb-8">
+          <li class="flex items-center gap-2"><span class="opacity-60">✓</span> QR untuk meja & banner</li>
+          <li class="flex items-center gap-2"><span class="opacity-60">✓</span> Tampilan foto produk</li>
+          <li class="flex items-center gap-2"><span class="opacity-60">✓</span> Update menu mandiri</li>
+          <li class="flex items-center gap-2"><span class="opacity-60">✓</span> Mobile-first design</li>
+        </ul>
+        <div class="bg-espresso-800 rounded-xl px-4 py-2 inline-block">
+          <span class="text-xs text-cream-100 opacity-60">Mulai dari</span>
+          <div class="font-display text-xl font-bold text-cream-50">Rp 300.000</div>
+        </div>
+      </div>
+
+      <!-- Service 3 -->
+      <div class="service-card reveal bg-cream-50 rounded-3xl p-8" style="transition-delay: 0.2s;">
+        <div class="w-14 h-14 rounded-2xl bg-sage-50 flex items-center justify-center text-2xl mb-6">📍</div>
+        <h3 class="font-display text-2xl font-bold text-espresso-800 mb-3">WhatsApp & Google Maps</h3>
+        <p class="text-espresso-400 text-sm leading-relaxed mb-6">
+          Setup WhatsApp Business lengkap dengan katalog dan auto-reply, plus optimasi Google Maps agar kedai mudah ditemukan calon pelanggan.
+        </p>
+        <ul class="space-y-2 text-sm text-espresso-600 mb-8">
+          <li class="flex items-center gap-2"><span class="text-sage-400">✓</span> WhatsApp Business lengkap</li>
+          <li class="flex items-center gap-2"><span class="text-sage-400">✓</span> Katalog produk digital</li>
+          <li class="flex items-center gap-2"><span class="text-sage-400">✓</span> Google Maps terverifikasi</li>
+          <li class="flex items-center gap-2"><span class="text-sage-400">✓</span> Foto & info lengkap di Maps</li>
+        </ul>
+        <div class="price-tag rounded-xl px-4 py-2 inline-block">
+          <span class="text-xs text-cream-100 opacity-60">Mulai dari</span>
+          <div class="font-display text-xl font-bold text-cream-50">Rp 200.000</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bundle CTA -->
+    <div class="reveal bg-gradient-to-r from-caramel-800 to-espresso-900 rounded-3xl p-8 flex flex-col md:flex-row items-center justify-between gap-6" style="background: linear-gradient(135deg, #4a2515 0%, #1a0e09 100%);">
+      <div>
+        <div class="inline-flex items-center gap-2 bg-caramel-400 text-cream-50 rounded-full px-3 py-1 text-xs font-medium mb-3">🔥 PALING POPULER</div>
+        <h3 class="font-display text-2xl font-bold text-cream-50 mb-1">Paket Lengkap (Bundel)</h3>
+        <p class="text-cream-100 opacity-60 text-sm">Ketiga layanan di atas dengan harga spesial — hemat hingga 30%</p>
+      </div>
+      <div class="text-right shrink-0">
+        <div class="text-cream-100 opacity-60 text-sm">Harga spesial</div>
+        <div class="font-display text-4xl font-black text-caramel-200">Rp 1.500.000</div>
+        <div class="text-cream-100 opacity-50 text-xs">s/d Rp 2.200.000</div>
+      </div>
+      <a href="#kontak" class="shrink-0 bg-caramel-400 hover:bg-caramel-200 text-espresso-800 font-semibold px-8 py-3.5 rounded-full text-sm transition-all hover:-translate-y-1 whitespace-nowrap">
+        Minta Penawaran →
+      </a>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════
+     PRICING
+══════════════════════════════════════════ -->
+<section id="harga" class="py-28 px-6 lg:px-12">
+  <div class="max-w-4xl mx-auto">
+    <div class="text-center mb-16 reveal">
+      <p class="text-caramel-400 text-sm font-semibold tracking-widest uppercase mb-4">Transparan & Terjangkau</p>
+      <h2 class="font-display text-4xl lg:text-5xl font-bold text-espresso-800 mb-4">Harga yang Jelas</h2>
+      <p class="text-espresso-400 max-w-md mx-auto">Tidak ada biaya tersembunyi. Semua harga sudah termasuk revisi dan dukungan 30 hari.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6 reveal">
+      <!-- Basic -->
+      <div class="service-card border border-cream-200 rounded-3xl p-7 bg-cream-50">
+        <div class="text-2xl mb-4">📱</div>
+        <h3 class="font-display text-xl font-bold text-espresso-800 mb-1">Menu QR</h3>
+        <p class="text-espresso-400 text-xs mb-6">Untuk kedai yang baru mulai digital</p>
+        <div class="font-display text-4xl font-black text-espresso-800 mb-1">Rp 300k</div>
+        <div class="text-espresso-400 text-xs mb-8">s/d Rp 500.000</div>
+        <ul class="space-y-3 text-sm text-espresso-600 mb-8">
+          <li class="flex items-start gap-2"><span class="text-caramel-400 mt-0.5">✓</span> QR code custom</li>
+          <li class="flex items-start gap-2"><span class="text-caramel-400 mt-0.5">✓</span> Menu dengan foto & harga</li>
+          <li class="flex items-start gap-2"><span class="text-caramel-400 mt-0.5">✓</span> Update mandiri</li>
+          <li class="flex items-start gap-2"><span class="text-caramel-400 mt-0.5">✓</span> Support 30 hari</li>
+        </ul>
+        <a href="#kontak" class="block text-center btn-outline px-4 py-2.5 rounded-full text-sm font-medium">Pilih Paket</a>
+      </div>
+
+      <!-- WA + Maps -->
+      <div class="service-card border border-cream-200 rounded-3xl p-7 bg-cream-50">
+        <div class="text-2xl mb-4">📍</div>
+        <h3 class="font-display text-xl font-bold text-espresso-800 mb-1">Maps + WA</h3>
+        <p class="text-espresso-400 text-xs mb-6">Tingkatkan temuan & komunikasi</p>
+        <div class="font-display text-4xl font-black text-espresso-800 mb-1">Rp 200k</div>
+        <div class="text-espresso-400 text-xs mb-8">s/d Rp 400.000</div>
+        <ul class="space-y-3 text-sm text-espresso-600 mb-8">
+          <li class="flex items-start gap-2"><span class="text-sage-400 mt-0.5">✓</span> Google Business Profile</li>
+          <li class="flex items-start gap-2"><span class="text-sage-400 mt-0.5">✓</span> WhatsApp Business setup</li>
+          <li class="flex items-start gap-2"><span class="text-sage-400 mt-0.5">✓</span> Katalog produk WA</li>
+          <li class="flex items-start gap-2"><span class="text-sage-400 mt-0.5">✓</span> Auto-reply pesan</li>
+        </ul>
+        <a href="#kontak" class="block text-center btn-outline px-4 py-2.5 rounded-full text-sm font-medium">Pilih Paket</a>
+      </div>
+
+      <!-- Bundle - highlighted -->
+      <div class="service-card rounded-3xl p-7 bg-espresso-800 relative overflow-hidden">
+        <div class="absolute top-4 right-4 bg-caramel-400 text-cream-50 text-xs font-bold px-3 py-1 rounded-full">BEST VALUE</div>
+        <div class="text-2xl mb-4">🚀</div>
+        <h3 class="font-display text-xl font-bold text-cream-50 mb-1">Paket Bundel</h3>
+        <p class="text-cream-100 opacity-50 text-xs mb-6">Solusi digital lengkap untuk kedai kopi</p>
+        <div class="font-display text-4xl font-black text-caramel-200 mb-1">Rp 1.5jt</div>
+        <div class="text-cream-100 opacity-50 text-xs mb-8">s/d Rp 2.200.000</div>
+        <ul class="space-y-3 text-sm text-cream-100 opacity-80 mb-8">
+          <li class="flex items-start gap-2"><span class="text-caramel-200 mt-0.5">✓</span> Website profesional custom</li>
+          <li class="flex items-start gap-2"><span class="text-caramel-200 mt-0.5">✓</span> Menu digital QR</li>
+          <li class="flex items-start gap-2"><span class="text-caramel-200 mt-0.5">✓</span> Google Maps + WhatsApp</li>
+          <li class="flex items-start gap-2"><span class="text-caramel-200 mt-0.5">✓</span> Garansi revisi 14 hari</li>
+          <li class="flex items-start gap-2"><span class="text-caramel-200 mt-0.5">✓</span> Support 30 hari</li>
+        </ul>
+        <a href="#kontak" class="block text-center bg-caramel-400 hover:bg-caramel-200 text-espresso-800 font-semibold px-4 py-2.5 rounded-full text-sm transition-all">Mulai Sekarang →</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════
+     PROCESS
+══════════════════════════════════════════ -->
+<section class="py-28 px-6 lg:px-12 bg-cream-100">
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-16 reveal">
+      <p class="text-caramel-400 text-sm font-semibold tracking-widest uppercase mb-4">Cara Kerja</p>
+      <h2 class="font-display text-4xl font-bold text-espresso-800">Dari Kontak ke Live</h2>
+      <p class="text-espresso-400 mt-3 max-w-md mx-auto">7–14 hari kerja dari tanda tangan kontrak hingga website kamu online.</p>
+    </div>
+
+<div class="grid md:grid-cols-7 gap-4 reveal">
+
+  <!-- Step 1 -->
+  <div class="flex md:flex-col items-center gap-4">
+    <div class="w-12 h-12 rounded-full bg-espresso-800 text-cream-50 flex items-center justify-center font-display font-bold text-lg">1</div>
+    <div class="text-center">
+      <div class="font-medium text-espresso-800 text-sm">Audit Gratis</div>
+      <div class="text-xs text-espresso-400 mt-1">Cek kondisi digital kedaimu</div>
+    </div>
+  </div>
+
+  <!-- Line -->
+  <div class="hidden md:flex items-center justify-center">
+    <div class="w-full h-0.5 bg-caramel-200"></div>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="flex md:flex-col items-center gap-4">
+    <div class="w-12 h-12 rounded-full bg-caramel-400 text-cream-50 flex items-center justify-center font-display font-bold text-lg">2</div>
+    <div class="text-center">
+      <div class="font-medium text-espresso-800 text-sm">Presentasi</div>
+      <div class="text-xs text-espresso-400 mt-1">Demo website & solusi</div>
+    </div>
+  </div>
+
+  <!-- Line -->
+  <div class="hidden md:flex items-center justify-center">
+    <div class="w-full h-0.5 bg-caramel-200"></div>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="flex md:flex-col items-center gap-4">
+    <div class="w-12 h-12 rounded-full bg-sage-400 text-cream-50 flex items-center justify-center font-display font-bold text-lg">3</div>
+    <div class="text-center">
+      <div class="font-medium text-espresso-800 text-sm">Pengerjaan</div>
+      <div class="text-xs text-espresso-400 mt-1">7–14 hari kerja</div>
+    </div>
+  </div>
+
+  <!-- Line -->
+  <div class="hidden md:flex items-center justify-center">
+    <div class="w-full h-0.5 bg-caramel-200"></div>
+  </div>
+
+  <!-- Step 4 -->
+  <div class="flex md:flex-col items-center gap-4">
+    <div class="w-12 h-12 rounded-full bg-espresso-800 text-caramel-200 flex items-center justify-center font-display font-bold text-lg">4</div>
+    <div class="text-center">
+      <div class="font-medium text-espresso-800 text-sm">Go Live!</div>
+      <div class="text-xs text-espresso-400 mt-1">Onboarding + support</div>
+    </div>
+  </div>
+
+</div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════
+     TEAM
+══════════════════════════════════════════ -->
+<section id="tim" class="py-28 px-6 lg:px-12">
+  <div class="max-w-7xl mx-auto">
+    
+    <!-- HEADER -->
+    <div class="text-center mb-32 lg:mb-24">
+      <p class="text-caramel-400 text-sm font-semibold tracking-widest uppercase mb-4">
+        Tim Kami
+      </p>
+      <h2 class="font-display text-4xl lg:text-5xl font-bold text-espresso-800">
+        Orang-orang di Balik KopiLabs
+      </h2>
+      <p class="text-espresso-400 mt-4 max-w-lg mx-auto">
+        Empat mahasiswa lintas jurusan dengan satu tujuan: membawa kedai kopi Indonesia ke level berikutnya.
+      </p>
+    </div>
+
+    <!-- GRID -->
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-16">
+
+      <!-- Member 1 -->
+      <div class="relative bg-cream-100 rounded-3xl pt-28 lg:pt-32 pb-6 px-6 text-center shadow-md">
+        <div class="absolute -top-16 lg:-top-24 left-1/2 -translate-x-1/2 w-56">
+          <img src="maskot/tami.png"
+            class="w-56 h-56 rounded-2xl object-cover">
+        </div>
+
+        <div class="inline-flex items-center gap-1 bg-caramel-50 text-caramel-600 border border-caramel-200 rounded-full px-3 py-1 text-xs font-medium mb-3">
+          Business Lead
+        </div>
+        <h3 class="font-display text-lg font-bold text-espresso-800">
+          Muhammad Khotami
+        </h3>
+        <p class="text-espresso-400 text-xs mt-2">
+          Manajemen klien & koordinasi tim.
+        </p>
+      </div>
+
+      <!-- Member 2 -->
+      <div class="relative bg-caramel-400 rounded-3xl pt-28 lg:pt-32 pb-6 px-6 text-center shadow-md">
+        <div class="absolute -top-16 lg:-top-24 left-1/2 -translate-x-1/2 w-56">
+          <img src="maskot/daoa.png"
+            class="w-56 h-56 rounded-2xl object-cover">
+        </div>
+
+        <div class="inline-flex items-center gap-1 bg-caramel-600 text-cream-100 rounded-full px-3 py-1 text-xs font-medium mb-3">
+          Tech Lead
+        </div>
+        <h3 class="font-display text-lg font-bold text-cream-50">
+          Dafa Prasetyo
+        </h3>
+        <p class="text-cream-50 opacity-80 text-xs mt-2">
+          Developer & sistem.
+        </p>
+      </div>
+
+      <!-- Member 3 -->
+      <div class="relative bg-sage-400 rounded-3xl pt-28 lg:pt-32 pb-6 px-6 text-center shadow-md">
+        <div class="absolute -top-16 lg:-top-24 left-1/2 -translate-x-1/2 w-56">
+          <img src="maskot/opang.png"
+            class="w-56 h-56 rounded-2xl object-cover">
+        </div>
+
+        <div class="inline-flex items-center gap-1 bg-sage-600 text-cream-100 rounded-full px-3 py-1 text-xs font-medium mb-3">
+          Coffee Specialist
+        </div>
+        <h3 class="font-display text-lg font-bold text-cream-50">
+          Muhammad Naufal Azmi
+        </h3>
+        <p class="text-cream-50 opacity-80 text-xs mt-2">
+          Riset & onboarding klien.
+        </p>
+      </div>
+
+      <!-- Member 4 -->
+      <div class="relative bg-espresso-800 rounded-3xl pt-28 lg:pt-32 pb-6 px-6 text-center shadow-md">
+        <div class="absolute -top-16 lg:-top-24 left-1/2 -translate-x-1/2 w-56">
+          <img src="maskot/poet.png"
+            class="w-56 h-56 rounded-2xl object-cover">
+        </div>
+
+        <div class="inline-flex items-center gap-1 bg-espresso-600 text-caramel-100 rounded-full px-3 py-1 text-xs font-medium mb-3">
+          Creative Lead
+        </div>
+        <h3 class="font-display text-lg font-bold text-cream-50">
+          Andhella Aulia Putra
+        </h3>
+        <p class="text-cream-100 opacity-70 text-xs mt-2">
+          Desain & visual.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════
+     WHY US
+══════════════════════════════════════════ -->
+<section class="py-28 px-6 lg:px-12 bg-espresso-800">
+  <div class="max-w-7xl mx-auto">
+    <div class="grid lg:grid-cols-2 gap-16 items-center">
+      <div class="reveal-left">
+        <p class="text-caramel-200 text-sm font-semibold tracking-widest uppercase mb-4">Kenapa KopiLabs?</p>
+        <h2 class="font-display text-4xl font-bold text-cream-50 leading-tight mb-8">
+          Bukan Jasa Digital<br/>Biasa —<br/><em class="text-caramel-400">Kami Paham Kopi</em>
+        </h2>
+
+        <div class="space-y-6">
+          <div class="flex gap-5">
+            <div class="w-12 h-12 rounded-xl bg-caramel-400 flex items-center justify-center text-xl shrink-0">🎯</div>
+            <div>
+              <h4 class="font-semibold text-cream-50 mb-1">Fokus Niche Kopi</h4>
+              <p class="text-cream-100 opacity-60 text-sm leading-relaxed">Layanan dirancang khusus untuk kedai kopi, bukan solusi generik. Kami memahami bahasa dan kebutuhan industri kopi.</p>
+            </div>
+          </div>
+          <div class="flex gap-5">
+            <div class="w-12 h-12 rounded-xl bg-sage-400 flex items-center justify-center text-xl shrink-0">💸</div>
+            <div>
+              <h4 class="font-semibold text-cream-50 mb-1">Harga UMKM Friendly</h4>
+              <p class="text-cream-100 opacity-60 text-sm leading-relaxed">3–5x lebih murah dari jasa serupa. Dirancang sesuai kemampuan finansial kedai kopi kecil.</p>
+            </div>
+          </div>
+          <div class="flex gap-5">
+            <div class="w-12 h-12 rounded-xl bg-espresso-600 flex items-center justify-center text-xl shrink-0">🤝</div>
+            <div>
+              <h4 class="font-semibold text-cream-50 mb-1">Pendampingan Purna Jual</h4>
+              <p class="text-cream-100 opacity-60 text-sm leading-relaxed">Garansi revisi 14 hari + support WhatsApp 30 hari. Kami tidak hilang setelah proyek selesai.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal-right">
+        <!-- Testimonial mock -->
+        <div class="bg-cream-50 rounded-3xl p-8">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-12 h-12 rounded-xl bg-caramel-100 flex items-center justify-center font-display font-bold text-caramel-600">WB</div>
+            <div>
+              <div class="font-semibold text-espresso-800 text-sm">Warung Kopi Bahagia</div>
+              <div class="text-espresso-400 text-xs">Bandung, Jawa Barat</div>
+            </div>
+            <div class="ml-auto text-caramel-400 text-sm">★★★★★</div>
+          </div>
+          <p class="text-espresso-600 italic leading-relaxed mb-6">
+            "Setelah pakai layanan KopiLabs, kunjungan ke Google Maps kami naik signifikan dalam sebulan. Website-nya terlihat profesional, pelanggan jadi lebih percaya."
+          </p>
+          <div class="flex items-center gap-3 pt-6 border-t border-cream-200">
+            <div class="flex-1">
+              <div class="text-xs text-espresso-400 mb-1">Kunjungan Google Maps</div>
+              <div class="bg-cream-200 rounded-full h-2">
+                <div class="bg-caramel-400 rounded-full h-2" style="width: 75%;"></div>
+              </div>
+              <div class="text-xs text-caramel-600 mt-1 font-medium">+75% dalam 3 bulan</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════
+     CONTACT
+══════════════════════════════════════════ -->
+<section id="kontak" class="py-28 px-6 lg:px-12">
+  <div class="max-w-3xl mx-auto text-center reveal">
+    <p class="text-caramel-400 text-sm font-semibold tracking-widest uppercase mb-4">Mulai Sekarang</p>
+    <h2 class="font-display text-4xl lg:text-5xl font-bold text-espresso-800 mb-6">
+      Siap Naikin Level<br/>Kedai Kopi Kamu?
+    </h2>
+    <p class="text-espresso-400 mb-10 max-w-md mx-auto">
+      Hubungi kami untuk audit digital GRATIS. Kami akan cek kondisi online kedaimu dan tunjukkan bagaimana KopiLabs bisa membantu.
+    </p>
+
+    <div class="grid md:grid-cols-3 gap-4 mb-10">
+      <a href="https://wa.me/6281200000000" class="service-card flex flex-col items-center gap-3 bg-cream-100 rounded-2xl p-6 hover:bg-caramel-50 transition-colors">
+        <span class="text-3xl">💬</span>
+        <div>
+          <div class="font-semibold text-espresso-800 text-sm">WhatsApp</div>
+          <div class="text-espresso-400 text-xs mt-0.5">+62 812-XXXX-XXXX</div>
+        </div>
+      </a>
+      <a href="mailto:hello@kopilabs.id" class="service-card flex flex-col items-center gap-3 bg-cream-100 rounded-2xl p-6 hover:bg-caramel-50 transition-colors">
+        <span class="text-3xl">📧</span>
+        <div>
+          <div class="font-semibold text-espresso-800 text-sm">Email</div>
+          <div class="text-espresso-400 text-xs mt-0.5">hello@kopilabs.id</div>
+        </div>
+      </a>
+      <a href="https://instagram.com/kopilabs.id" class="service-card flex flex-col items-center gap-3 bg-cream-100 rounded-2xl p-6 hover:bg-caramel-50 transition-colors">
+        <span class="text-3xl">📸</span>
+        <div>
+          <div class="font-semibold text-espresso-800 text-sm">Instagram</div>
+          <div class="text-espresso-400 text-xs mt-0.5">@kopilabs.id</div>
+        </div>
+      </a>
+    </div>
+
+    <a href="https://wa.me/6281200000000" class="btn-primary inline-flex items-center gap-2 px-10 py-4 rounded-full font-semibold text-base">
+      Minta Audit Gratis Sekarang ☕
+    </a>
+    <p class="text-espresso-400 text-xs mt-4">Respons dalam 1×24 jam pada hari kerja</p>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════ -->
+<footer class="bg-espresso-800 py-12 px-6 lg:px-12">
+  <div class="max-w-7xl mx-auto">
+    <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+      <div>
+        <span class="font-display font-bold text-2xl text-cream-50">
+          Kopi<span class="text-caramel-400">Labs</span>
+        </span>
+        <p class="text-cream-100 opacity-50 text-xs mt-2">Solusi Digital untuk Kedai Kopi Indonesia</p>
+      </div>
+      <div class="flex items-center gap-8 text-sm text-cream-100 opacity-50">
+        <a href="#layanan" class="hover:opacity-100 transition-opacity">Layanan</a>
+        <a href="#harga"   class="hover:opacity-100 transition-opacity">Harga</a>
+        <a href="#tim"     class="hover:opacity-100 transition-opacity">Tim</a>
+        <a href="#kontak"  class="hover:opacity-100 transition-opacity">Kontak</a>
+      </div>
+      <p class="text-cream-100 opacity-30 text-xs">© 2026 KopiLabs. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+
+<!-- ══════════════════════════════════════════
+     GSAP ANIMATIONS
+══════════════════════════════════════════ -->
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+// Hero entrance sequence
+const heroTl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+heroTl
+  .to('#hero-badge',  { opacity: 1, y: 0, duration: 0.6, delay: 0.2 })
+  .to('#hero-title',  { opacity: 1, y: 0, duration: 0.8 }, '-=0.3')
+  .to('#hero-sub',    { opacity: 1, y: 0, duration: 0.7 }, '-=0.5')
+  .to('#hero-cta',    { opacity: 1, y: 0, duration: 0.6 }, '-=0.4')
+  .to('#hero-stats',  { opacity: 1, y: 0, duration: 0.6 }, '-=0.3')
+  .to('#hero-visual', { opacity: 1, x: 0, duration: 1.0, ease: 'power2.out' }, '-=0.8');
+
+// Scroll-triggered reveals
+gsap.utils.toArray('.reveal').forEach(el => {
+  gsap.to(el, {
+    opacity: 1, y: 0, duration: 0.7, ease: 'power2.out',
+    scrollTrigger: { trigger: el, start: 'top 85%', toggleActions: 'play none none none' }
+  });
+});
+
+gsap.utils.toArray('.reveal-left').forEach(el => {
+  gsap.to(el, {
+    opacity: 1, x: 0, duration: 0.8, ease: 'power2.out',
+    scrollTrigger: { trigger: el, start: 'top 80%' }
+  });
+});
+
+gsap.utils.toArray('.reveal-right').forEach(el => {
+  gsap.to(el, {
+    opacity: 1, x: 0, duration: 0.8, ease: 'power2.out',
+    scrollTrigger: { trigger: el, start: 'top 80%' }
+  });
+});
+
+// Stagger children in team section
+gsap.utils.toArray('.team-card').forEach((card, i) => {
+  gsap.from(card, {
+    opacity: 0, y: 40, scale: 0.95,
+    duration: 0.6,
+    delay: i * 0.12,
+    ease: 'back.out(1.2)',
+    scrollTrigger: { trigger: card, start: 'top 90%' }
+  });
+});
+
+// Parallax on hero visual
+gsap.to('#hero-visual', {
+  yPercent: -15,
+  ease: 'none',
+  scrollTrigger: {
+    trigger: '#hero',
+    start: 'top top',
+    end: 'bottom top',
+    scrub: true
+  }
+});
+
+// Nav background fade
+ScrollTrigger.create({
+  start: 100,
+  onEnter:  () => gsap.to('nav', { borderBottomColor: 'rgba(198,139,63,0.25)', duration: 0.3 }),
+  onLeaveBack: () => gsap.to('nav', { borderBottomColor: 'rgba(198,139,63,0.15)', duration: 0.3 })
+});
+
+// Counter animation for stats
+function animateCounter(el, target, prefix, suffix) {
+  gsap.to({ val: 0 }, {
+    val: target,
+    duration: 1.5,
+    ease: 'power2.out',
+    onUpdate: function() {
+      el.textContent = prefix + Math.round(this.targets()[0].val).toLocaleString() + suffix;
+    },
+    scrollTrigger: { trigger: el, start: 'top 90%', once: true }
+  });
+}
+</script>
+
+</body>
+</html>
